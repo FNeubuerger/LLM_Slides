@@ -130,26 +130,26 @@
 
 \begin{frame}{Definition und Ziele des NLP}
   \begin{itemize}
-    \item NLP steht für Natural Language Processing, die Verarbeitung natürlicher Sprache durch Computer.
-    \item Ziel: Maschinen ermöglichen, menschliche Sprache zu verstehen, zu interpretieren und zu generieren.
+    \item NLP steht für Natural Language Processing, die Verarbeitung natürlicher Sprache durch Computer. \\
+    \item Ziel: Maschinen ermöglichen, menschliche Sprache zu verstehen, zu interpretieren und zu generieren. \\
     \item Anwendungen: Übersetzungen, Chatbots, Textanalyse, Sprachassistenten.
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Herausforderungen bei der maschinellen Sprachverarbeitung}
   \begin{itemize}
-    \item Ambiguität: Mehrdeutigkeit in der Sprache.
-    \item Kontextabhängigkeit: Bedeutung hängt vom Kontext ab.
-    \item Umgang mit Synonymen und Homonymen.
+    \item Ambiguität: Mehrdeutigkeit in der Sprache.\\
+    \item Kontextabhängigkeit: Bedeutung hängt vom Kontext ab.\\
+    \item Umgang mit Synonymen und Homonymen. \\
     \item Verarbeitung großer Datenmengen und Rechenaufwand.
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Anwendungen von NLP in der Praxis}
   \begin{itemize}
-    \item Sentiment-Analyse: Erkennung von Meinungen in Texten.
-    \item Maschinelle Übersetzung: Automatische Übersetzung zwischen Sprachen.
-    \item Sprachgesteuerte Assistenten: Siri, Alexa, Google Assistant.
+    \item Sentiment-Analyse: Erkennung von Meinungen in Texten. \\
+    \item Maschinelle Übersetzung: Automatische Übersetzung zwischen Sprachen. \\
+    \item Sprachgesteuerte Assistenten: Siri, Alexa, Google Assistant. \\
     \item Textzusammenfassung: Automatische Erstellung von Textzusammenfassungen.
   \end{itemize}
 \end{frame}
@@ -178,12 +178,14 @@
 \begin{frame}{Data Cleaning}
   \begin{itemize}
     \item \textbf{Definition:} Entfernen oder Korrigieren von fehlerhaften, unvollständigen oder irrelevanten Daten.
+    \vspace{0.5cm}
     \item \textbf{Schritte:}
       \begin{itemize}
         \item Entfernen von Sonderzeichen, HTML-Tags und Emojis.
         \item Korrektur von Rechtschreibfehlern.
         \item Vereinheitlichung von Groß- und Kleinschreibung.
       \end{itemize}
+      \vspace{0.5cm}
     \item \textbf{Ziel:} Verbesserung der Datenqualität für nachfolgende Verarbeitungsschritte.
   \end{itemize}
 \end{frame}
@@ -191,12 +193,14 @@
 \begin{frame}{Tokenization}
   \begin{itemize}
     \item \textbf{Definition:} Zerlegung von Text in kleinere Einheiten (Tokens), z. B. Wörter oder Satzzeichen.
+    \vspace{0.5cm}
     \item \textbf{Arten:}
       \begin{itemize}
         \item Wortbasierte Tokenization: "Das ist ein Satz." → ["Das", "ist", "ein", "Satz", "."]
         \item Zeichenbasierte Tokenization: "Hallo" → ["H", "a", "l", "l", "o"]
         \item Subwortbasierte Tokenization: "unbelievable" → ["un", "believ", "able"]
       \end{itemize}
+      \vspace{0.5cm}
     \item \textbf{Herausforderungen:} Umgang mit zusammengesetzten Wörtern, Abkürzungen und Sonderzeichen.
   \end{itemize}
 \end{frame}
@@ -204,6 +208,7 @@
 \begin{frame}{Normalization}
   \begin{itemize}
     \item \textbf{Definition:} Vereinheitlichung von Textdaten, um Konsistenz zu gewährleisten.
+    \vspace{0.5cm}
     \item \textbf{Schritte:}
       \begin{itemize}
         \item Umwandlung in Kleinbuchstaben: "Haus" → "haus".
@@ -211,6 +216,7 @@
         \item Stemming: Reduktion auf Wortstamm, z. B. "running" → "run".
         \item Lemmatization: Rückführung auf Grundform, z. B. "better" → "good".
       \end{itemize}
+      \vspace{0.5cm}
     \item \textbf{Ziel:} Reduktion der Variabilität in den Daten.
   \end{itemize}
 \end{frame}
@@ -218,11 +224,13 @@
 \begin{frame}{Stopword Removal}
   \begin{itemize}
     \item \textbf{Definition:} Entfernen von häufig vorkommenden Wörtern, die wenig Bedeutung tragen (z. B. "der", "und", "ist").
+    \vspace{0.5cm}
     \item \textbf{Vorgehen:}
       \begin{itemize}
         \item Verwendung einer vordefinierten Stopword-Liste (z. B. "der", "die", "und", "ist", "ein", "zu").
         \item Anpassung der Liste an den spezifischen Anwendungsfall.
       \end{itemize}
+    \vspace{0.5cm}
     \item \textbf{Vorteile:}
       \begin{itemize}
         \item Reduktion der Datenmenge.
@@ -257,12 +265,14 @@
     \begin{column}{1\textwidth}
       \begin{itemize}
         \item Ziel: Repräsentation von Wörtern in einem kontinuierlichen Vektorraum.
+        \vspace{0.5cm}
         \item Mathematische Definition:
           \begin{itemize}
             \item Gegeben eine Menge von Wörtern \( W = \{w_1, w_2, \dots, w_n\} \).
             \item Eine Einbettung ist eine Funktion \( f: W \to \mathbb{R}^d \), wobei \( d \) die Dimension des Vektorraums ist.
             \item Beispiel: \( f(w_i) = \mathbf{v}_i \in \mathbb{R}^d \).
           \end{itemize}
+          \vspace{0.5cm}
         \item Vorteile:
           \begin{itemize}
             \item Semantische Ähnlichkeit wird durch Nähe im Vektorraum dargestellt.
@@ -287,6 +297,7 @@
         \item Beispiel: Für \( W = \{w_1, w_2, w_3\} \), \( w_2 \) wird als \( [0, 1, 0] \) kodiert.
         \item Nachteile: Hohe Dimensionalität, keine semantische Information.
       \end{itemize}
+      \vspace{0.5cm}
     \item \textbf{Verteilte Repräsentationen:}
       \begin{itemize}
         \item Nutzen kontinuierliche Vektorräume, um semantische Beziehungen darzustellen\footnote{Mikolov, T., Chen, K., Corrado, G., \& Dean, J. (2013). Efficient Estimation of Word Representations in Vector Space. arXiv preprint arXiv:1301.3781.}..
@@ -306,11 +317,13 @@
         \item Skip-Gram-Modell: Vorhersage des Kontexts basierend auf einem Zielwort\footnote{Das Skip-Gram-Modell versucht, für ein gegebenes Zielwort die umgebenden Kontextwörter vorherzusagen.}.
         \item CBOW-Modell: Vorhersage des Zielworts basierend auf dem Kontext\footnote{Das Continuous Bag of Words (CBOW)-Modell sagt ein Zielwort basierend auf den umgebenden Kontextwörtern vorher. Es ist effizienter als das Skip-Gram-Modell, aber weniger präzise bei seltenen Wörtern.}.
       \end{itemize}
+      \vspace{0.4cm}
     \item \textbf{GloVe (Global Vectors for Word Representation):}
       \begin{itemize}
         \item Nutzt globale Wort-Kooccurenz-Matrizen\footnote{GloVe basiert auf der Idee, dass die globale Häufigkeit von Wortpaaren in einem Korpus genutzt werden kann, um semantische Beziehungen zwischen Wörtern zu modellieren.}.
         \item Optimiert eine Zielfunktion, die Wortpaare und ihre Häufigkeiten berücksichtigt\footnote{Die Zielfunktion von GloVe minimiert den Unterschied zwischen der inneren Produktdarstellung von Wortvektoren und der logarithmierten Häufigkeit von Wortpaaren.}.
       \end{itemize}
+      \vspace{0.4cm}
     \item \textbf{Andere Methoden:}
       \begin{itemize}
         \item FastText: Berücksichtigt Subwortinformationen.
@@ -326,6 +339,7 @@
         \item Modelle wie BERT\footnote{Devlin, J., Chang, M.-W., Lee, K., \& Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. \url{https://arxiv.org/abs/1810.04805}}, GPT\footnote{Brown, T. et al. (2020). Language Models are Few-Shot Learners. \url{https://arxiv.org/abs/2005.14165}} und T5\footnote{Raffel, C. et al. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. \url{https://arxiv.org/abs/1910.10683}} generieren Embeddings, die den Kontext eines Wortes berücksichtigen.
         \item Beispiel: Das Wort "Bank" hat unterschiedliche Embeddings in den Sätzen "Ich sitze auf der Bank" und "Ich gehe zur Bank".
       \end{itemize}
+    \vspace{0.5cm}
     \item \textbf{Sentence Embeddings:}
       \begin{itemize}
         \item Repräsentieren ganze Sätze statt einzelner Wörter.
@@ -341,11 +355,13 @@
         \item Kombinieren Informationen aus verschiedenen Modalitäten wie Text, Bild und Audio.
         \item Beispiel: CLIP (Contrastive Language–Image Pretraining)\footnote{Radford, A. et al. (2021). Learning Transferable Visual Models From Natural Language Supervision. \url{https://arxiv.org/abs/2103.00020}} von OpenAI.
       \end{itemize}
+    \vspace{0.5cm}
     \item \textbf{Graphbasierte Embeddings:}
-     \begin{itemize}
+      \begin{itemize}
         \item Repräsentieren Wörter als Knoten in einem Graphen, wobei Kanten Beziehungen zwischen Wörtern darstellen.
         \item Beispiel: Node2Vec\footnote{Grover, A., \& Leskovec, J. (2016). node2vec: Scalable Feature Learning for Networks. \url{https://arxiv.org/abs/1607.00653}} und GraphSAGE\footnote{Hamilton, W. et al. (2017). Inductive Representation Learning on Large Graphs. \url{https://arxiv.org/abs/1706.02216}}.
       \end{itemize}
+    \vspace{0.5cm}
     \item \textbf{Adapter-basierte Embeddings:}
       \begin{itemize}
         \item Ermöglichen die Anpassung vortrainierter Modelle an spezifische Aufgaben durch leichte Modifikationen.
@@ -380,16 +396,16 @@
 
 \begin{frame}{Attention-Mechanismus}
   \begin{itemize}
-    \item Motivation für Attention in Sequenzmodellen
-    \item Funktionsweise des Attention-Mechanismus
+    \item Motivation für Attention in Sequenzmodellen \\
+    \item Funktionsweise des Attention-Mechanismus \\
     \item Unterschied zwischen Self-Attention und Cross-Attention
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Motivation für Attention in Sequenzmodellen}
   \begin{itemize}
-    \item Problem: In langen Sequenzen verlieren Modelle wie RNNs und LSTMs den Überblick über frühere Informationen.
-    \item Lösung: Der Attention-Mechanismus ermöglicht es, gezielt auf relevante Teile der Eingabesequenz zu fokussieren.
+    \item Problem: In langen Sequenzen verlieren Modelle wie RNNs und LSTMs den Überblick über frühere Informationen. \\
+    \item Lösung: Der Attention-Mechanismus ermöglicht es, gezielt auf relevante Teile der Eingabesequenz zu fokussieren. \\
     \item Beispiel: Bei der Übersetzung eines Satzes kann Attention bestimmen, welches Wort im Quelltext für ein bestimmtes Wort im Zieltext wichtig ist.
   \end{itemize}
 \end{frame}
@@ -576,8 +592,8 @@
 
 \begin{frame}{Transformer-Architektur}
   \begin{itemize}
-    \item Überblick über die Transformer-Architektur
-    \item Encoder-Decoder-Struktur
+    \item Überblick über die Transformer-Architektur \\
+    \item Encoder-Decoder-Struktur \\
     \item Vorteile gegenüber rekurrenten Netzwerken
   \end{itemize}
 \end{frame}
@@ -589,8 +605,8 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \begin{itemize}
-        \item Einführung in BERT und seine Architektur
-        \item Weiterentwicklungen: GPT, RoBERTa, T5
+        \item Einführung in BERT und seine Architektur \\
+        \item Weiterentwicklungen: GPT, RoBERTa, T5 \\
         \item Überblick über DeepSeek-v3 und seine Besonderheiten
       \end{itemize}
         \end{column}
