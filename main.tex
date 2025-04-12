@@ -1243,6 +1243,7 @@
   \end{itemize}
 \end{frame}
 
+
 % Folie 10: GPT vs. BERT – Architektur und Trainingsziel
 \begin{frame}{GPT vs. BERT – Fundamentale Unterschiede}
   \begin{columns}
@@ -1269,6 +1270,178 @@
       \textit{GPT erzeugt Sprache -- BERT versteht sie.}
   \end{center}
 \end{frame}
+
+% Abschnitt: Fine-Tuning von LLMs
+\section{Fine-Tuning von LLMs}
+
+\begin{frame}{Was ist Fine-Tuning?}
+  \begin{itemize}
+    \item \textbf{Definition:} Anpassung eines vortrainierten Modells an eine spezifische Aufgabe oder Domäne.
+    \item \textbf{Ziel:} Verbesserung der Leistung auf spezifischen Aufgaben durch zusätzliche Trainingsdaten.
+    \item \textbf{Vorgehen:}
+      \begin{itemize}
+        \item Start mit einem vortrainierten Modell (z. B. BERT, GPT).
+        \item Hinzufügen einer spezifischen Schicht (z. B. Klassifikationslayer).
+        \item Training auf einem domänenspezifischen Datensatz.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vorteile des Fine-Tunings}
+  \begin{itemize}
+    \item \textbf{Effizienz:} Reduziert den Bedarf an großen Trainingsressourcen, da das Modell bereits vortrainiert ist.
+    \item \textbf{Anpassungsfähigkeit:} Ermöglicht die Anpassung an spezifische Aufgaben oder Domänen.
+    \item \textbf{Verbesserte Leistung:} Höhere Genauigkeit und Relevanz für spezifische Anwendungen.
+    \item \textbf{Wiederverwendbarkeit:} Vortrainierte Modelle können für verschiedene Aufgaben wiederverwendet werden.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Nachteile des Fine-Tunings}
+  \begin{itemize}
+    \item \textbf{Overfitting:} Risiko, dass das Modell zu stark an den spezifischen Datensatz angepasst wird.
+    \item \textbf{Datenbedarf:} Erfordert qualitativ hochwertige und ausreichend große Datensätze.
+    \item \textbf{Rechenaufwand:} Kann trotz Vortraining immer noch ressourcenintensiv sein.
+    \item \textbf{Komplexität:} Erfordert Fachwissen für die richtige Konfiguration und Optimierung.
+  \end{itemize}
+\end{frame}
+
+% Abschnitt: Fine-Tuning-Techniken für LLMs
+\section{Fine-Tuning-Techniken für LLMs}
+
+\begin{frame}{Fine-Tuning-Techniken für LLMs}
+  \begin{itemize}
+    \item \textbf{Parameter-Efficient Fine-Tuning (PEFT):}
+      \begin{itemize}
+        \item Ziel: Reduktion der Anzahl der zu trainierenden Parameter.
+        \item Vorteile: Geringerer Speicherbedarf und schnellere Trainingszeiten.
+      \end{itemize}
+    \item \textbf{Low-Rank Adaptation (LoRA):}
+      \begin{itemize}
+        \item Ziel: Effiziente Anpassung vortrainierter Modelle durch Low-Rank-Matrizen.
+        \item Vorteile: Speicher- und Rechenaufwand werden drastisch reduziert.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Parameter-Efficient Fine-Tuning (PEFT)}
+  \begin{itemize}
+    \item \textbf{Grundidee:}
+      \begin{itemize}
+        \item Statt das gesamte Modell zu aktualisieren, werden nur wenige Parameter angepasst.
+        \item Nutzung von Adapter-Schichten, Prompt-Tuning oder LoRA.
+      \end{itemize}
+    \item \textbf{Mathematische Grundlage:}
+      \begin{itemize}
+        \item Gegeben ein vortrainiertes Modell mit Parametern \( \theta \).
+        \item PEFT optimiert nur einen kleinen Teil \( \Delta \theta \), sodass:
+          \[
+          \theta' = \theta + \Delta \theta
+          \]
+        \item Ziel: Minimierung des Verlusts \( \mathcal{L} \) über \( \Delta \theta \):
+          \[
+          \min_{\Delta \theta} \mathcal{L}(f(x; \theta + \Delta \theta), y)
+          \]
+      \end{itemize}
+    \item \textbf{Vorteile:}
+      \begin{itemize}
+        \item Reduktion des Speicherbedarfs.
+        \item Wiederverwendbarkeit des vortrainierten Modells.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Low-Rank Adaptation (LoRA): Grundidee}
+  \begin{itemize}
+    \item \textbf{Motivation:}
+      \begin{itemize}
+        \item Große Sprachmodelle haben Milliarden von Parametern.
+        \item LoRA reduziert die Anzahl der zu trainierenden Parameter durch Low-Rank-Matrizen.
+      \end{itemize}
+    \item \textbf{Ansatz:}
+      \begin{itemize}
+        \item Zerlegung der Gewichtsmatrix \( W \) in zwei Low-Rank-Matrizen \( A \) und \( B \):
+          \[
+          W' = W + \Delta W, \quad \Delta W = A B^\top
+          \]
+        \item \( A \in \mathbb{R}^{d \times r} \), \( B \in \mathbb{R}^{d \times r} \), wobei \( r \ll d \).
+      \end{itemize}
+    \item \textbf{Vorteile:}
+      \begin{itemize}
+        \item Reduktion der Speicher- und Rechenkosten.
+        \item Effizientes Fine-Tuning ohne Änderung der Hauptgewichte \( W \).
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Low-Rank Adaptation (LoRA): Mathematische Details}
+  \begin{itemize}
+    \item \textbf{Modellanpassung:}
+      \begin{itemize}
+        \item Gegeben eine Gewichtsmatrix \( W \), wird die Anpassung \( \Delta W \) durch:
+          \[
+          \Delta W = A B^\top
+          \]
+          berechnet, wobei \( A \) und \( B \) trainierbar sind.
+      \end{itemize}
+    \item \textbf{Optimierung:}
+      \begin{itemize}
+        \item Ziel: Minimierung des Verlusts \( \mathcal{L} \) über \( A \) und \( B \):
+          \[
+          \min_{A, B} \mathcal{L}(f(x; W + A B^\top), y)
+          \]
+      \end{itemize}
+    \item \textbf{Effizienz:}
+      \begin{itemize}
+        \item Speicherbedarf: \( O(r \cdot (d + d)) \), wobei \( r \ll d \).
+        \item Rechenaufwand: Geringer als vollständiges Fine-Tuning.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vergleich: PEFT, LoRA und Full Fine-Tuning}
+  \begin{table}[]
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+      \hline
+      \textbf{Eigenschaft} & \textbf{PEFT} & \textbf{LoRA} & \textbf{Full Fine-Tuning} \\ \hline
+      Speicherbedarf & Gering & Sehr gering & Hoch \\ \hline
+      Rechenaufwand & Mittel & Niedrig & Sehr hoch \\ \hline
+      Flexibilität & Hoch & Mittel & Sehr hoch \\ \hline
+      Anwendungsfälle & Allgemein & Speziell für LLMs & Universell \\ \hline
+    \end{tabular}
+    \caption{Vergleich von PEFT, LoRA und Full Fine-Tuning.}
+  \end{table}
+\end{frame}
+
+\begin{frame}{Fine-Tuning Frameworks}
+  \begin{itemize}
+    \item \textbf{Hugging Face Transformers:}
+      \begin{itemize}
+        \item Umfangreiche Bibliothek für vortrainierte Modelle.
+        \item Unterstützt einfache Anpassung und Fine-Tuning.
+        \item \url{https://github.com/huggingface/transformers}
+      \end{itemize}
+    \item \textbf{OpenAI Fine-Tuning API:}
+      \begin{itemize}
+        \item Ermöglicht das Fine-Tuning von GPT-Modellen.
+        \item Einfache Integration in bestehende Anwendungen.
+        \item \url{https://platform.openai.com/docs/guides/fine-tuning}
+      \end{itemize}
+    \item \textbf{PyTorch Lightning:}
+      \begin{itemize}
+        \item Framework für vereinfachtes Training und Fine-Tuning.
+        \item Unterstützt verteiltes Training und Mixed Precision.
+        \item \url{https://www.pytorchlightning.ai/}
+      \end{itemize}
+    \item \textbf{LoRA (Low-Rank Adaptation):}
+      \begin{itemize}
+        \item Effizientes Fine-Tuning durch Reduktion der Parameteranzahl.
+        \item Besonders geeignet für ressourcenbeschränkte Umgebungen.
+        \item \url{https://github.com/microsoft/LoRA}
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
 
 % Abschnitt: Weitere LLM-Architekturen
 \section{Weitere LLM-Architekturen}
