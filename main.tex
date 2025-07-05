@@ -1798,8 +1798,8 @@
 
 \begin{frame}{Und was machen wir jetzt mit diesen Systemen?}
   \begin{itemize}
-    \item Praktische Anwendungen und Integration in bestehende Systeme
-    \item Herausforderungen bei der Implementierung und Skalierung
+    \item Praktische Anwendungen und Integration in bestehende Systeme \\
+    \item Herausforderungen bei der Implementierung und Skalierung \\
     \item Gesellschaftliche und ethische Implikationen
   \end{itemize}
 \end{frame}
@@ -1834,7 +1834,7 @@
   \begin{itemize}
     \item \textbf{Retriever:}
       \begin{itemize}
-        \item Abruf relevanter Dokumente aus einer Wissensdatenbank.
+        \item Abruf relevanter Dokumente aus einer Wissensdatenbank. \\
         \item Nutzung von Suchalgorithmen und Vektorraumsmodellen.
       \end{itemize}
 
@@ -1858,8 +1858,10 @@
 \begin{frame}{RAG: Herausforderungen}
   \begin{itemize}
     \item \textbf{Effizienz:} Abruf und Generierung können rechenintensiv sein. \\
+    \item \textbf{Schnittstellen:} Legacy-Systeme und APIs müssen integriert werden. \\
+    \item \textbf{Access Rights Management:} Sicherstellen, dass nur autorisierte Informationen abgerufen werden. \\
     \item \textbf{Qualität der Dokumente:} Die Genauigkeit hängt von der Qualität der abgerufenen Dokumente ab. \\
-    \item \textbf{Integration:} Nahtlose Kombination von Retriever und Generator ist komplex. \\
+    \item \textbf{Konsistenz:} Inkonsistenzen zwischen abgerufenen Informationen und generierten Antworten. \\
     \item \textbf{Bias:} Bias in der Wissensdatenbank können die Antworten beeinflussen.
   \end{itemize}
 \end{frame}
@@ -1878,8 +1880,8 @@
 
 \begin{frame}{Was ist Document Embedding in RAG Pipelines?}
   \begin{itemize}
-    \item \textbf{Definition:} Repräsentation eines gesamten Dokuments als Vektor in einem kontinuierlichen Vektorraum, speziell für Retrieval-Augmented Generation (RAG).
-    \item \textbf{Ziel:} Ermöglichen eines effizienten Abrufs relevanter Dokumente aus einer Vektordatenbank.
+    \item \textbf{Definition:} Repräsentation eines gesamten Dokuments/Chunks als Vektor in einem kontinuierlichen Vektorraum, speziell für Retrieval-Augmented Generation (RAG).
+    \item \textbf{Ziel:} Ermöglichen eines effizienten Abrufs relevanter Dokumente/Chunks aus einer Vektordatenbank.
     \item \textbf{Anwendungen in RAG:}
       \begin{itemize}
         \item Verbesserung der Antwortqualität durch Zugriff auf relevante Dokumente.
@@ -1993,19 +1995,160 @@
   \end{table}
 \end{frame}
 
+
+% Abschnitt: GraphRAG und Wissenseinbettung in Graphdatenbanken
+\section{GraphRAG: Wissenseinbettung in Graphdatenbanken und Ontologien}
+
+\begin{frame}{Was ist GraphRAG?}
+  \begin{itemize}
+    \item \textbf{Definition:} Erweiterung von Retrieval-Augmented Generation (RAG) durch die Nutzung von Graphdatenbanken und \textbf{Ontologien} als Wissensquelle.
+    \item \textbf{Ziel:} Verbesserung der Kontextualisierung und Präzision durch explizite Modellierung von Beziehungen und Konzepten.
+    \item \textbf{Vorteile:}
+      \begin{itemize}
+        \item Explizite Repräsentation von Entitäten, Beziehungen und Konzepten (durch Ontologien).
+        \item Ermöglicht komplexe Abfragen, Reasoning und Inferenz über das Wissen.
+        \item Bessere Nachvollziehbarkeit und Erklärbarkeit der Antworten.
+      \end{itemize}
+    \item \textbf{Anwendungen:} Fragebeantwortung, wissensbasierte Chatbots, wissenschaftliche Recherche, Medizin, Recht, Industrie 4.0.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Ontologien: Strukturierte Wissensrepräsentation}
+  \begin{itemize}
+    \item \textbf{Definition:} Eine Ontologie ist eine formale, maschinenlesbare Beschreibung von Konzepten, deren Eigenschaften und Beziehungen in einem bestimmten Domänenbereich.
+    \item \textbf{Beispiel:} 
+      \begin{itemize}
+        \item \textbf{Medizin:} SNOMED CT, ICD-10 (Krankheiten, Symptome, Therapien)
+        \item \textbf{Wissenschaft:} Gene Ontology (GO), Chemical Entities of Biological Interest (ChEBI)
+        \item \textbf{Industrie:} Industrie 4.0 Asset Administration Shell (AAS) Ontologie
+      \end{itemize}
+    \item \textbf{Nutzen:}
+      \begin{itemize}
+        \item Standardisierte Begriffe und Beziehungen
+        \item Unterstützung von Inferenz und semantischer Suche
+        \item Interoperabilität zwischen Systemen
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Wissenseinbettung in Graphdatenbanken und Ontologien}
+  \begin{itemize}
+    \item \textbf{Graphdatenbank:} Speichert Wissen als Knoten (Entitäten/Konzepte) und Kanten (Beziehungen), oft auf Basis einer Ontologie.
+    \item \textbf{Einbettung (Embedding):}
+      \begin{itemize}
+        \item Jeder Knoten und jede Kante erhält einen Vektor im kontinuierlichen Raum.
+        \item Methoden: Node2Vec, GraphSAGE, TransE, GNN-basierte Ansätze.
+      \end{itemize}
+    \item \textbf{Pipeline:}
+      \begin{enumerate}
+        \item Extraktion von Entitäten, Relationen und Konzepten aus Text (z. B. mit NLP und Ontologie-Mapping).
+        \item Aufbau des Wissensgraphen in einer Graphdatenbank (z. B. Neo4j, TigerGraph) unter Nutzung einer Ontologie.
+        \item Berechnung von Embeddings für Knoten/Kanten.
+        \item Retrieval relevanter Subgraphen/Konzepte als Kontext für LLMs.
+      \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Beispiel 1: Medizinische Fragebeantwortung mit Ontologie}
+  \begin{itemize}
+    \item \textbf{Ontologie:} SNOMED CT (medizinische Begriffe und Relationen)
+    \item \textbf{Frage:} "Welche Therapien gibt es für Diabetes Typ 2?"
+    \item \textbf{Ablauf:}
+      \begin{enumerate}
+        \item LLM erkennt Entität "Diabetes Typ 2" und mapped sie auf die Ontologie.
+        \item GraphRAG sucht im Wissensgraphen nach Knoten "Diabetes Typ 2" und allen Kanten "behandelt mit".
+        \item Die gefundenen Therapien werden als strukturierter Kontext an das LLM übergeben.
+        \item LLM generiert eine nachvollziehbare, medizinisch fundierte Antwort.
+      \end{enumerate}
+    \item \textbf{Vorteil:} Medizinische Präzision, Nachvollziehbarkeit, Nutzung von Expertenwissen.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Beispiel 2: Industrie 4.0 – Asset-Verwaltung mit Ontologie}
+  \begin{itemize}
+    \item \textbf{Ontologie:} Asset Administration Shell (AAS) Ontologie
+    \item \textbf{Frage:} "Welche Maschinen sind Teil der Fertigungslinie X und wann ist die nächste Wartung?"
+    \item \textbf{Ablauf:}
+      \begin{enumerate}
+        \item LLM mapped "Fertigungslinie X" auf die Ontologie.
+        \item GraphRAG sucht alle Maschinen (Knoten) mit Relation "ist Teil von" zu "Fertigungslinie X".
+        \item Für jede Maschine wird die Relation "nächste Wartung" abgefragt.
+        \item LLM gibt eine strukturierte Übersicht aus.
+      \end{enumerate}
+    \item \textbf{Vorteil:} Transparenz, Automatisierung, Integration von Echtzeitdaten.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{GraphRAG: Architekturüberblick}
+  \begin{itemize}
+    \item \textbf{Komponenten:}
+      \begin{itemize}
+        \item \textbf{Graphdatenbank/Ontologie:} Speicherung und Abfrage von Wissensgraphen und Konzepten.
+        \item \textbf{Graph Embedding-Modell:} Erzeugt Vektorrepräsentationen für Knoten/Kanten/Subgraphen.
+        \item \textbf{Retriever:} Findet relevante Subgraphen/Konzepte zu einer Anfrage.
+        \item \textbf{LLM:} Nutzt die abgerufenen Graph- und Ontologiekontexte zur Antwortgenerierung.
+      \end{itemize}
+    \item \textbf{Ablauf:}
+      \begin{enumerate}
+        \item Anfrage wird in Entitäten/Relationen/Konzepte zerlegt (NLP + Ontologie-Mapping).
+        \item Passende Subgraphen/Konzepte werden per Embedding-Ähnlichkeit oder Graphabfrage gefunden.
+        \item Kontext wird an das LLM übergeben.
+        \item LLM generiert Antwort unter Nutzung des strukturierten Wissens.
+      \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vergleich: Klassisches RAG vs. GraphRAG mit Ontologien}
+  \begin{table}[]
+    \centering
+    \begin{tabular}{|l|l|l|}
+      \hline
+      \textbf{Eigenschaft} & \textbf{Klassisches RAG} & \textbf{GraphRAG mit Ontologie} \\ \hline
+      Wissensquelle & Dokumente/Chunks & Wissensgraph/Ontologie \\ \hline
+      Kontextabruf & Vektorähnlichkeit & Graphabfragen + Embeddings + Inferenz \\ \hline
+      Beziehungen & Implizit im Text & Explizit und semantisch modelliert \\ \hline
+      Reasoning & Eingeschränkt & Komplexe Pfad-, Beziehungs- und Konzeptabfragen \\ \hline
+      Erklärbarkeit & Gering & Sehr hoch \\ \hline
+      Domänenwissen & Unstrukturiert & Standardisiert, interoperabel \\ \hline
+    \end{tabular}
+    \caption{Vergleich von klassischem RAG und GraphRAG mit Ontologien.}
+  \end{table}
+\end{frame}
+
+\begin{frame}{Herausforderungen und Ausblick für GraphRAG mit Ontologien}
+  \begin{itemize}
+    \item \textbf{Herausforderungen:}
+      \begin{itemize}
+        \item Extraktion und Aktualisierung von Entitäten/Relationen/Konzepten aus Text.
+        \item Skalierbare Berechnung und Speicherung von Graph- und Ontologie-Embeddings.
+        \item Effiziente Subgraph- und Konzept-Retrieval-Algorithmen.
+        \item Integration von Ontologiekontext in LLM-Prompts.
+        \item Pflege und Erweiterung von Ontologien.
+      \end{itemize}
+    \item \textbf{Ausblick:}
+      \begin{itemize}
+        \item Kombination von GraphRAG mit multimodalen Wissensquellen (Text, Bild, Sensorik).
+        \item Automatisierte Ontologie-Generierung und -Aktualisierung.
+        \item Verbesserte Reasoning-Fähigkeiten durch strukturierte, domänenspezifische Kontextbereitstellung.
+        \item Einsatz in kritischen Bereichen wie Medizin, Recht, Industrie.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
 % Abschnitt: Komplexe Agentensysteme
 \section{Komplexe Agentensysteme}
 
 \begin{frame}{Was sind komplexe Agentensysteme?}
   \begin{itemize}
-    \item \textbf{Definition:} Systeme, die autonome Agenten nutzen, um komplexe Aufgaben durch Interaktion mit Tools und Umgebungen zu lösen.
+    \item \textbf{Definition:} Systeme, die autonome Agenten nutzen, um komplexe Aufgaben durch Interaktion mit Tools, Ontologien und Umgebungen zu lösen.
     \item \textbf{Merkmale:}
       \begin{itemize}
         \item Autonomie: Agenten agieren teilweise unabhängig in einem vorgegebenen Rahmen.
-        \item Tool-Nutzung: Zugriff auf externe APIs, Datenbanken oder Software.
+        \item Tool-Nutzung: Zugriff auf externe APIs, Datenbanken, Ontologien oder Software.
         \item Multi-Agent-Koordination: Zusammenarbeit mehrerer Agenten.
       \end{itemize}
-    \item \textbf{Anwendungen:} Wissenschaftliche Forschung, Automatisierung, Problemlösung.
+    \item \textbf{Anwendungen:} Wissenschaftliche Forschung, Automatisierung, Problemlösung, Wissensmanagement.
   \end{itemize}
 \end{frame}
 
@@ -2014,17 +2157,36 @@
     \item \textbf{Hauptkomponenten:}
       \begin{itemize}
         \item \textbf{Agenten:} Autonome Einheiten mit spezifischen Fähigkeiten.
-        \item \textbf{Tool-Interface:} Ermöglicht den Zugriff auf externe Tools wie APIs, Datenbanken oder Rechenressourcen.
+        \item \textbf{Tool-Interface:} Ermöglicht den Zugriff auf externe Tools wie APIs, Datenbanken, Ontologien oder Rechenressourcen.
         \item \textbf{Kommunikationsmodul:} Ermöglicht den Austausch zwischen Agenten.
         \item \textbf{Planungs- und Entscheidungsmodul:} Koordiniert die Aktionen der Agenten.
       \end{itemize}
     \item \textbf{Workflow:}
       \begin{enumerate}
         \item Eingabe einer Aufgabe durch den Benutzer.
-        \item Agenten analysieren die Aufgabe und planen die Lösung.
-        \item Tools werden genutzt, um Teilaufgaben zu lösen.
+        \item Agenten analysieren die Aufgabe, nutzen ggf. Ontologien zur Wissensstrukturierung und planen die Lösung.
+        \item Tools und Ontologien werden genutzt, um Teilaufgaben zu lösen.
         \item Ergebnisse werden aggregiert und präsentiert.
       \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Beispiel: Multi-Agentensystem für medizinische Diagnose}
+  \begin{itemize}
+    \item \textbf{Ziel:} Automatisierte Unterstützung bei der medizinischen Diagnose.
+    \item \textbf{Agentenrollen:}
+      \begin{itemize}
+        \item \textbf{Symptom-Analyseagent:} Extrahiert Symptome aus Patientendaten.
+        \item \textbf{Ontologie-Agent:} Nutzt medizinische Ontologien (z. B. SNOMED CT), um Symptome mit möglichen Diagnosen zu verknüpfen.
+        \item \textbf{Literaturagent:} Sucht nach aktuellen Studien zu den gefundenen Diagnosen.
+        \item \textbf{Berichtsagent:} Generiert einen strukturierten Diagnosebericht.
+      \end{itemize}
+    \item \textbf{Tool-Nutzung:}
+      \begin{itemize}
+        \item Zugriff auf medizinische Datenbanken und Ontologien.
+        \item Nutzung von NLP und LLMs zur Kontextanreicherung.
+      \end{itemize}
+    \item \textbf{Vorteile:} Präzision, Nachvollziehbarkeit, Integration von Expertenwissen.
   \end{itemize}
 \end{frame}
 
@@ -2035,35 +2197,96 @@
       \begin{itemize}
         \item \textbf{Suchagent:} Durchsucht Datenbanken nach relevanten Artikeln.
         \item \textbf{Beispiele für Datenbanken:} PubMed, ArXiv, Semantic Scholar, SpringerLink, IEEE Xplore.
-        \item \textbf{Analyseagent:} Führt Analysen zu den gefundenen Dokuemnten durch.
+        \item \textbf{Ontologie-Agent:} Ordnet gefundene Artikel zu Konzepten einer wissenschaftlichen Ontologie (z. B. Gene Ontology).
+        \item \textbf{Analyseagent:} Führt Analysen zu den gefundenen Dokumenten durch.
         \item \textbf{Berichtsagent:} Generiert Zusammenfassungen und Berichte.
       \end{itemize}
     \item \textbf{Tool-Nutzung:}
       \begin{itemize}
-        \item Zugriff auf APIs wie PubMed oder ArXiv.
-        \item weitere LLM Abrufe
+        \item Zugriff auf APIs, Ontologien und LLMs.
         \item Nutzung von Python-Bibliotheken wie Pandas oder Matplotlib.
       \end{itemize}
-    \item \textbf{Vorteile:} Effizienzsteigerung, Reduktion manueller Arbeit.
+    \item \textbf{Vorteile:} Effizienzsteigerung, strukturierte Ergebnisse, semantische Suche.
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Herausforderungen bei komplexen Agentensystemen}
   \begin{itemize}
     \item \textbf{Koordination:} Synchronisation zwischen mehreren Agenten.
-    \item \textbf{Tool-Integration:} Kompatibilität mit verschiedenen APIs und Software.
+    \item \textbf{Tool- und Ontologie-Integration:} Kompatibilität mit verschiedenen APIs, Ontologien und Software.
     \item \textbf{Fehlerbehandlung:} Umgang mit Ausfällen oder unvorhergesehenen Ereignissen.
     \item \textbf{Skalierbarkeit:} Effizienz bei wachsender Anzahl von Agenten oder Aufgaben.
     \item \textbf{Sicherheit:} Schutz vor Missbrauch oder fehlerhaften Aktionen.
+    \item \textbf{Ontologiepflege:} Aktualisierung und Erweiterung der Wissensbasis.
   \end{itemize}
 \end{frame}
 
+% Abschnitt: Tool Calling mit MCP-Servern
+\section{Potenzielle Lösung: Tool Calling mit MCP-Servern}
+
+\begin{frame}{Was ist Tool Calling mit MCP-Servern?}
+  \begin{itemize}
+    \item \textbf{Tool Calling:} LLMs rufen externe Tools oder APIs auf, um Aufgaben zu lösen, die über reine Textgenerierung hinausgehen.
+    \item \textbf{MCP-Server (Multi-Component Platform):} Vermittlungsinstanz, die Anfragen von LLMs entgegennimmt, an spezialisierte Tools weiterleitet und die Ergebnisse zurückgibt.
+    \item \textbf{Ziel:} Erweiterung der Fähigkeiten von LLMs durch strukturierte, sichere und skalierbare Tool-Nutzung.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Model Context Protocol (MCP): Überblick}
+  \begin{itemize}
+    \item \textbf{Definition:} Das Model Context Protocol (MCP) ist ein standardisiertes Protokoll zur strukturierten Kommunikation zwischen LLMs, Agenten und externen Tools.
+    \item \textbf{Ziel:} Ermöglicht die Übergabe von Kontext, Aufgaben, Tool-Aufrufen und Ergebnissen in einem maschinenlesbaren Format (z.\,B. JSON, YAML).
+    \item \textbf{Kernfunktionen:}
+      \begin{itemize}
+        \item \textbf{Kontextübergabe:} Übermittlung von Hintergrundwissen, Benutzeranfragen und Umgebungsdaten an das Modell.
+        \item \textbf{Tool-Calls:} Strukturierte Anforderung von externen Aktionen (z.\,B. Datenbankabfragen, API-Aufrufe).
+        \item \textbf{Antwortintegration:} Rückgabe von Tool-Ergebnissen und deren Einbindung in die Modellantwort.
+        \item \textbf{Status- und Fehlerhandling:} Standardisierte Rückmeldungen zu Erfolg, Fehlern und Zwischenergebnissen.
+      \end{itemize}
+    \item \textbf{Beispielstruktur (JSON):}
+      \begin{itemize}
+        \item \texttt{\{"context": \{\}, "task": "...", "tool\_calls": [...], "results": [...], "status": "ok"\}}
+      \end{itemize}
+    \item \textbf{Vorteile:} Interoperabilität, Nachvollziehbarkeit, Modularität und sichere Integration von LLMs in komplexe Agentensysteme.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Architektur: Tool Calling mit MCP-Servern}
+  \begin{itemize}
+    \item \textbf{Komponenten:}
+      \begin{itemize}
+        \item \textbf{LLM:} Erkennt, wann ein Tool-Aufruf nötig ist, und formuliert eine strukturierte Anfrage.
+        \item \textbf{MCP-Server:} Vermittelt zwischen LLM und Tools, verwaltet Authentifizierung, Logging und Fehlerbehandlung.
+        \item \textbf{Tools/Services:} Externe APIs, Datenbanken, Rechenmodule oder Ontologien.
+      \end{itemize}
+    \item \textbf{Ablauf:}
+      \begin{enumerate}
+        \item LLM generiert eine Tool-Call-Anfrage (z. B. im JSON-Format).
+        \item MCP-Server empfängt die Anfrage, prüft und leitet sie an das passende Tool weiter.
+        \item Tool verarbeitet die Anfrage und sendet das Ergebnis an den MCP-Server.
+        \item MCP-Server gibt das Ergebnis an das LLM zurück, das es in die Antwort integriert.
+      \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vorteile von Tool Calling mit MCP-Servern}
+  \begin{itemize}
+    \item \textbf{Modularität:} Einfache Integration neuer Tools und Services.
+    \item \textbf{Sicherheit:} Zentralisiertes Management von Zugriffsrechten und Monitoring.
+    \item \textbf{Skalierbarkeit:} Parallele Verarbeitung mehrerer Anfragen und Lastverteilung.
+    \item \textbf{Nachvollziehbarkeit:} Logging aller Tool-Calls für Audits und Debugging.
+    \item \textbf{Domänenspezifische Erweiterbarkeit:} Einbindung von branchenspezifischen Tools und Ontologien.
+  \end{itemize}
+\end{frame}
+
+
 \begin{frame}{Zukunftsperspektiven für Agentensysteme}
   \begin{itemize}
-    \item \textbf{Verbesserte Autonomie:} Einsatz von LLMs für flexiblere Entscheidungsfindung.
-    \item \textbf{Erweiterte Tool-Nutzung:} Integration von spezialisierten Tools wie KI-gestützten Analyseplattformen.
-    \item \textbf{Multi-Agent-Kollaboration:} Entwicklung von Protokollen für effizientere Zusammenarbeit. (json ist gut)
-    \item \textbf{Domänenspezifische Systeme:} Anpassung an spezifische Branchen wie Medizin, Recht oder Ingenieurwesen.
+    \item \textbf{Verbesserte Autonomie:} Einsatz von LLMs und Ontologien für flexiblere Entscheidungsfindung.
+    \item \textbf{Erweiterte Tool- und Ontologie-Nutzung:} Integration von spezialisierten Tools und domänenspezifischen Ontologien.
+    \item \textbf{Multi-Agent-Kollaboration:} Entwicklung von Protokollen für effizientere Zusammenarbeit (z. B. JSON, RDF).
+    \item \textbf{Domänenspezifische Systeme:} Anpassung an spezifische Branchen wie Medizin, Recht, Industrie.
+    \item \textbf{Automatisierte Ontologie-Generierung:} LLMs unterstützen beim Aufbau und der Pflege von Ontologien.
   \end{itemize}
 \end{frame}
 
@@ -2072,10 +2295,10 @@
 
 \begin{frame}{Zukunftsvisionen für LLMs}
   \begin{itemize}
-    \item \textbf{Verbesserte Multimodalität:} Integration von Text, Bild, Audio und Video in einem Modell.
-    \item \textbf{Domänenspezifische Modelle:} Entwicklung spezialisierter LLMs für Medizin, Recht, Bildung und andere Bereiche.
-    \item \textbf{Interaktive KI-Systeme:} Kombination von LLMs mit Robotik und IoT für physische Interaktionen.
-    \item \textbf{Selbstlernende Systeme:} Modelle, die sich kontinuierlich durch Interaktion mit der Umgebung verbessern.
+    \item \textbf{Verbesserte Multimodalität:} Integration von Text, Bild, Audio und Video in einem Modell. \\
+    \item \textbf{Domänenspezifische Modelle:} Entwicklung spezialisierter LLMs für Medizin, Recht, Bildung und andere Bereiche. \\
+    \item \textbf{Interaktive KI-Systeme:} Kombination von LLMs mit Robotik und IoT für physische Interaktionen.\\
+    \item \textbf{Selbstlernende Systeme:} Modelle, die sich kontinuierlich durch Interaktion mit der Umgebung verbessern.\\
     \item \textbf{KI-gestützte Kreativität:} Unterstützung bei Kunst, Musik, Literatur und Design.
   \end{itemize}
 \end{frame}
