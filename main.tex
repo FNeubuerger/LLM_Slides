@@ -61,6 +61,9 @@
         \item von BERT zu DeepSeek-v3 \newline 
         \item Wie es weitergehen kann \newline
         \item Nutzungsmöglichkeiten: RAG, Agentensysteme \newline
+        \item NER, Hybride Pipelines, Wissensgraphen \newline
+        \item Tool Calling, ReAct, Agentic Loop \newline
+        \item Selbstlernende Agenten, Skills, Multi-Agenten \newline
         \item AI Safety und Ethik
       \end{itemize}
     \end{column}
@@ -1996,38 +1999,249 @@
 \end{frame}
 
 
-% Abschnitt: GraphRAG und Wissenseinbettung in Graphdatenbanken
-\section{GraphRAG: Wissenseinbettung in Graphdatenbanken und Ontologien}
+% Abschnitt: Named Entity Recognition und Informationsextraktion
+\section{Named Entity Recognition (NER) und Informationsextraktion}
 
-\begin{frame}{Was ist GraphRAG?}
+\begin{frame}{Grenzen von dokumentenbasiertem Retrieval -- Motivation}
   \begin{itemize}
-    \item \textbf{Definition:} Erweiterung von Retrieval-Augmented Generation (RAG) durch die Nutzung von Graphdatenbanken und \textbf{Ontologien} als Wissensquelle.
-    \item \textbf{Ziel:} Verbesserung der Kontextualisierung und Präzision durch explizite Modellierung von Beziehungen und Konzepten.
-    \item \textbf{Vorteile:}
+    \item Klassisches RAG ruft \emph{Textpassagen} ab -- Beziehungen zwischen Entitäten bleiben \textbf{implizit im Fließtext}.
+    \item \textbf{Konkrete Probleme:}
       \begin{itemize}
-        \item Explizite Repräsentation von Entitäten, Beziehungen und Konzepten (durch Ontologien).
-        \item Ermöglicht komplexe Abfragen, Reasoning und Inferenz über das Wissen.
-        \item Bessere Nachvollziehbarkeit und Erklärbarkeit der Antworten.
+        \item \textbf{Terminologische Inkonsistenz:} ``Herzinfarkt'', ``Myokardinfarkt'' und ``AMI'' meinen dasselbe -- der Retriever weiß das nicht.
+        \item \textbf{Multi-hop-Fragen:} ``Welche Nebenwirkungen hat Medikament X bei Patienten mit Diagnose Y?'' erfordert das Traversieren von Beziehungen, nicht nur Textsuche.
+        \item \textbf{Keine Domänenlogik:} Textchunks kennen keine Taxonomien, Regeln oder Axiome.
       \end{itemize}
-    \item \textbf{Anwendungen:} Fragebeantwortung, wissensbasierte Chatbots, wissenschaftliche Recherche, Medizin, Recht, Industrie 4.0.
+    \vspace{0.2cm}
+    \item \textbf{Lösungsweg:} Text schrittweise in strukturiertes Wissen überführen.
+      \begin{enumerate}
+        \item Entitäten erkennen \textrightarrow{} \textbf{Named Entity Recognition (NER)}
+        \item Beziehungen extrahieren \textrightarrow{} \textbf{Relationsextraktion}
+        \item Auf formales Vokabular abbilden \textrightarrow{} \textbf{Ontologie-Mapping}
+        \item Im Graphen speichern und abfragen \textrightarrow{} \textbf{Wissensgraph + GraphRAG}
+      \end{enumerate}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Ontologien: Strukturierte Wissensrepräsentation}
+\begin{frame}{Was ist Named Entity Recognition (NER)?}
   \begin{itemize}
-    \item \textbf{Definition:} Eine Ontologie ist eine formale, maschinenlesbare Beschreibung von Konzepten, deren Eigenschaften und Beziehungen in einem bestimmten Domänenbereich.
-    \item \textbf{Beispiel:} 
+    \item \textbf{Definition:} NER identifiziert und klassifiziert benannte Entitäten im Text -- der \textbf{erste Schritt} von unstrukturiertem Text zu strukturiertem Wissen.
+    \item \textbf{Typische Entitätstypen (CoNLL-2003 Standard):}
       \begin{itemize}
-        \item \textbf{Medizin:} SNOMED CT, ICD-10 (Krankheiten, Symptome, Therapien)
-        \item \textbf{Wissenschaft:} Gene Ontology (GO), Chemical Entities of Biological Interest (ChEBI)
-        \item \textbf{Industrie:} Industrie 4.0 Asset Administration Shell (AAS) Ontologie
+        \item \textbf{PER} -- Personen (z.\,B. ``Angela Merkel'')
+        \item \textbf{ORG} -- Organisationen (z.\,B. ``SAP AG'')
+        \item \textbf{LOC} -- Orte und Lokationen (z.\,B. ``Berlin'')
+        \item \textbf{DATE/TIME} -- Zeitangaben (z.\,B. ``März 2024'')
+        \item \textbf{MISC} -- Sonstiges (Produkte, Ereignisse, Sprachen)
       \end{itemize}
-    \item \textbf{Nutzen:}
+    \item \textbf{Domänenspezifische Erweiterungen:}
       \begin{itemize}
-        \item Standardisierte Begriffe und Beziehungen
-        \item Unterstützung von Inferenz und semantischer Suche
-        \item Interoperabilität zwischen Systemen
+        \item Medizin: GENE, DISEASE, DRUG, PROCEDURE (BC5CDR, NCBI Disease)
+        \item Recht: LAW, COURT, JUDGE, REGULATION
+        \item Industrie: MACHINE, SENSOR, COMPONENT, PROCESS
       \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NER-Methoden: Von Regelbasiert zu Transformer}
+  \begin{itemize}
+    \item \textbf{Regelbasierte Ansätze:}
+      \begin{itemize}
+        \item Wörterbücher, reguläre Ausdrücke und handgefertigte Grammatiken.
+        \item Präzise, aber unflexibel und aufwendig in der Pflege.
+      \end{itemize}
+    \item \textbf{ML-basierte Ansätze (CRF):}
+      \begin{itemize}
+        \item Conditional Random Fields (CRF) modellieren Abhängigkeiten zwischen Tags in einer Sequenz.
+        \item IOB-Tagging: \texttt{B-PER}, \texttt{I-PER}, \texttt{O} (Begin, Inside, Outside).
+      \end{itemize}
+    \item \textbf{Transformer-basierte Ansätze:}
+      \begin{itemize}
+        \item BERT als Token-Klassifikator: Jeder Token erhält ein NER-Label.
+        \item State-of-the-Art durch kontextualisierte Embeddings.
+        \item Mehrsprachig: mBERT, XLM-RoBERTa.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{BERT für NER: Token-Klassifikation}
+  \begin{itemize}
+    \item \textbf{Ansatz:} BERT wird auf Token-Ebene feinjustiert -- jeder Token erhält eine Entitätsklasse.
+    \item \textbf{IOB-Schema Beispiel:}\\[0.3cm]
+      \texttt{Angela [B-PER]\ \ Merkel [I-PER]\ \ war [O]\ \ Bundeskanzlerin [O]\ \ Deutschlands [B-LOC].}
+    \vspace{0.3cm}
+    \item \textbf{Fine-Tuning:}
+      \begin{itemize}
+        \item Linearer Klassifikationslayer auf BERT-Token-Embeddings.
+        \item Training auf beschrifteten Datensätzen (z.\,B. CoNLL-2003, GermEval).
+      \end{itemize}
+    \item \textbf{Tools:} spaCy (Transformer-Backend), Hugging Face \texttt{token-classification}, Flair.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Relationsextraktion und Koreferenzauflösung}
+  \begin{itemize}
+    \item \textbf{Relationsextraktion (RE):}
+      \begin{itemize}
+        \item Erkennt semantische Beziehungen zwischen erkannten Entitäten.
+        \item Beispiel: ``Bosch hat seinen Sitz in Stuttgart.''\\
+          $\Rightarrow$ \texttt{(Bosch, headquartered\_in, Stuttgart)}
+        \item Methoden: Pipeline (NER $\rightarrow$ RE), End-to-End-Transformer-Modelle.
+      \end{itemize}
+    \vspace{0.3cm}
+    \item \textbf{Koreferenzauflösung:}
+      \begin{itemize}
+        \item Identifikation von Ausdrücken, die auf dieselbe Entität verweisen.
+        \item Beispiel: ``Elon Musk gründete Tesla. \textbf{Er} ist auch CEO von SpaceX.''
+        \item Wichtig für korrekte Entitätsverfolgung über längere Texte.
+      \end{itemize}
+    \vspace{0.2cm}
+    \item \textbf{Relevanz:} NER + RE + Koreferenz bilden die Grundlage für automatischen Wissensgraphaufbau.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Hybride Pipeline: Text $\rightarrow$ Entitäten $\rightarrow$ Wissensgraph (Teil 1)}
+  \begin{itemize}
+    \item \textbf{Ziel:} Unstrukturierter Text wird schrittweise in einen maschinenlesbaren, abfragbaren Wissensgraphen überführt.
+    \item \textbf{Pipeline-Schritte:}
+      \begin{enumerate}
+        \item \textbf{Textvorbereitung:} Satzgrenzerkennung, Tokenisierung, Normalisierung.
+        \item \textbf{NER:} Erkennung von Entitätserwähnungen (PER, ORG, LOC, DISEASE, \ldots).
+        \item \textbf{Koreferenzauflösung:} Zusammenführen von Erwähnungen derselben Entität.
+        \item \textbf{Relationsextraktion:} Erkennung von Tripeln \texttt{(Subjekt, Prädikat, Objekt)}.\\
+          Bsp.: \texttt{(Metformin, behandelt, DiabetesTyp2)}
+        \item \textbf{Entity Linking:} Mapping auf eindeutige Ontologie-Konzept-IDs.\\
+          Bsp.: ``Herzinfarkt'' $\mapsto$ \texttt{SNOMED:22298006}
+        \item \textbf{Graphaufbau:} Knoten = verlinkte Konzepte, Kanten = typisierte Relationen.
+      \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Hybride Pipeline: Typische Herausforderungen (Teil 2)}
+  \begin{itemize}
+    \item \textbf{Entity Disambiguation:} ``Apple'' -- Unternehmen oder Frucht?\\
+      $\Rightarrow$ Kontextbasiertes Linking durch Bi-Encoder/Cross-Encoder.
+    \item \textbf{Ontologie-Lücken (erwartet und normal!):} Wachsende Domänen bringen ständig neue Konzepte -- Ontologien werden versioniert wie Software.\\
+      $\Rightarrow$ NIL-Detektion flaggt unbekannte Entitäten; Ontologieexperten ergänzen sie in der nächsten Ontologieversion. Mit der aktualisierten Ontologie wird der Graph inkrementell neu aufgebaut.
+    \item \textbf{Fehlerfortpflanzung:} NER-Fehler $\rightarrow$ falsche Relationen $\rightarrow$ falsches Graphwissen.\\
+      $\Rightarrow$ Konfidenz-Scores, Stichprobenprüfung, Revisions-Pipelines.
+    \item \textbf{Skalierbarkeit:} Millionen Dokumente erfordern Streaming-Verarbeitung (z.\,B. Spark NLP).
+    \item \textbf{Mehrsprachigkeit:} Entitäten verschiedener Sprachen werden auf dieselbe Ontologie abgebildet.\\
+      $\Rightarrow$ Mehrsprachige Verlinkungsmodelle (mGENRE, XLM-RoBERTa-basiert).
+  \end{itemize}
+  \vspace{0.2cm}
+  \begin{center}
+    \footnotesize\textit{Werkzeuge: spaCy $\cdot$ Hugging~Face $\cdot$ BLINK $\cdot$ Neo4j $\cdot$ Microsoft~GraphRAG\footnote{\url{https://github.com/microsoft/graphrag}} $\cdot$ LlamaIndex}
+  \end{center}
+\end{frame}
+
+% Abschnitt: Ontologien als formale Wissensrepräsentation
+\section{Ontologien: Formale Wissensrepräsentation}
+
+\begin{frame}{Was ist eine Ontologie? -- Grundlagen}
+  \begin{itemize}
+    \item \textbf{Definition (Informatik):} Eine Ontologie ist eine formale, maschinenlesbare Spezifikation einer geteilten Konzeptualisierung -- sie definiert präzise, was in einer Domäne \emph{existiert} und wie Konzepte \emph{zusammenhängen}.
+    \item \textbf{Vier Kernkomponenten:}
+      \begin{itemize}
+        \item \textbf{Klassen (Concepts):} Abstrakte Kategorien, z.\,B. \texttt{Krankheit}, \texttt{Medikament}.
+        \item \textbf{Properties (Relationen):} Typisierte Verbindungen, z.\,B. \texttt{behandelt}, \texttt{istTeilVon}.
+        \item \textbf{Instanzen (Individuals):} Konkrete Objekte, z.\,B. \texttt{Metformin} $\in$ \texttt{Medikament}.
+        \item \textbf{Axiome (Restrictions):} Logische Regeln, z.\,B.\\
+          \texttt{DiabetesTyp2} $\sqsubseteq$ \texttt{Stoffwechselerkrankung}
+      \end{itemize}
+    \item \textbf{Technologien:} OWL~2 (Web Ontology Language), RDF/RDFS, SKOS.
+    \item \textbf{Abfragesprache:} SPARQL -- SQL für Graphen und Ontologien.\\
+      Bsp.: \texttt{SELECT ?t WHERE \{ :DiabetesTyp2 :behandeltMit ?t \}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Ontologien: Competency Questions -- Anforderungen formalisieren}
+  \begin{itemize}
+    \item \textbf{Competency Questions (CQs)} sind natürlichsprachliche Fragen, die eine Ontologie beantworten können soll -- sie definieren Umfang und Anforderungen eines Ontologieprojekts.\footnote{Gruber, T.~R. (1993). A translation approach to portable ontology specifications. \textit{Knowledge Acquisition, 5}(2), 199--220.}
+    \item \textbf{Zweck:}
+      \begin{itemize}
+        \item Steuern, welche Konzepte und Relationen modelliert werden müssen (\emph{Scope}).
+        \item Dienen zur \textbf{Evaluation}: Kann die Ontologie alle CQs via SPARQL beantworten?
+        \item Verhindern Over-Engineering: Konzepte ohne CQ-Deckung gehören nicht in die Ontologie.
+      \end{itemize}
+    \item \textbf{Beispiel-CQs (medizinische Ontologie):}
+      \begin{itemize}
+        \item ``Welche Medikamente werden zur Behandlung von Diabetes~Typ~2 eingesetzt?''
+        \item ``Welche Kontraindikationen existieren für Metformin?''
+        \item ``Welche Erkrankungen sind Subklassen von Stoffwechselerkrankungen?''
+      \end{itemize}
+    \item \textbf{Methoden:} METHONTOLOGY, NeOn Methodology -- systematische Ontologieentwicklung mit CQs als rotem Faden.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Ontologien: Menschliche Kuration und etablierte Beispiele}
+  \begin{itemize}
+    \item \textbf{Wichtig:} Ontologien werden primär von \textbf{Domänenexperten und Fachgesellschaften manuell erstellt und kuratiert}. Sie kodieren jahrelang gesammeltes Expertenwissen in maschinenlesbarer, logisch konsistenter Form.
+    \item \textbf{Etablierte Ontologien:}
+      \begin{itemize}
+        \item \textbf{Medizin:} SNOMED CT ($>$350\,000 Konzepte), ICD-10/11 (WHO), LOINC, Gene Ontology (GO)
+        \item \textbf{Allgemein:} Schema.org (Web), Wikidata, DBpedia, FOAF
+        \item \textbf{Industrie:} Asset Administration Shell (AAS/RAMI~4.0), ISO~15926
+        \item \textbf{Wissenschaft:} ChEBI (Chemikalien), OBO Foundry (biologische Domänen)
+      \end{itemize}
+    \item \textbf{Pflege und Governance:}
+      \begin{itemize}
+        \item Versionierung, Change-Management, Review-Prozesse durch Expertenkomitees.
+        \item LLMs als \emph{Unterstützung} bei Erstellung und Pflege -- kein autonomer Ersatz.
+        \item Herausforderung: Schnelllebige Domänen erfordern regelmäßige Aktualisierung.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vom NER-Ergebnis zur Ontologie: Entity Linking}
+  \begin{itemize}
+    \item \textbf{Entity Linking (EL):} Verknüpft einen NER-Textspan mit einem eindeutigen Konzept-URI in einer Ontologie -- die Brücke zwischen Text und strukturiertem Wissen.
+    \item \textbf{Drei-Schritt-Prozess:}
+      \begin{enumerate}
+        \item \textbf{Kandidatengenerierung:} Suche ähnlicher Konzeptnamen (TF-IDF, Embedding-Suche).
+        \item \textbf{Disambiguierung:} Auswahl des korrekten Kandidaten anhand des Satzkontexts\\
+          (Bi-Encoder für Recall, Cross-Encoder für Precision).
+        \item \textbf{NIL-Detektion:} Erkennung, wenn kein passender Kandidat existiert.
+      \end{enumerate}
+    \vspace{0.2cm}
+    \item \textbf{Beispiel:}\\
+      Text: ``Der Patient hat \textbf{Diabetes}.''\\
+      NER: \texttt{Diabetes} $\rightarrow$ DISEASE\\
+      EL + Kontext: \texttt{Diabetes} $\rightarrow$ \texttt{SNOMED:73211009} (Diabetes mellitus, nicht spezifiziert)
+    \item \textbf{Werkzeuge:} BLINK (Meta), mGENRE (mehrsprachig), scispaCy (biomedizinisch), ReFinED.
+  \end{itemize}
+\end{frame}
+
+% Abschnitt: GraphRAG und Wissenseinbettung in Graphdatenbanken
+\section{GraphRAG: Wissenseinbettung in Graphdatenbanken und Ontologien}
+
+\begin{frame}{Was ist GraphRAG? -- Vom Textchunk zum Wissensgraph}
+  \begin{itemize}
+    \item \textbf{Definition:} GraphRAG erweitert klassisches RAG: statt Textchunks werden \textbf{Subgraphen eines Wissensgraphen} abgerufen -- direkt auf Basis der zuvor eingeführten Ontologien.
+    \item \textbf{Warum der Schritt?} NER + Relationsextraktion + Entity Linking haben den Text strukturiert -- jetzt kann man \emph{traversieren} statt nur \emph{suchen}.
+    \item \textbf{Vorteile gegenüber klassischem RAG:}
+      \begin{itemize}
+        \item Explizite Beziehungen: kein impliziter Fließtext mehr.
+        \item Multi-hop-Reasoning über Graphpfade möglich.
+        \item Inferenz: neue Fakten aus vorhandenen Axiomen ableiten.
+        \item Erklärbarkeit: Antwortpfad im Graph nachvollziehbar.
+      \end{itemize}
+    \item \textbf{Anwendungen:} Medizin, Recht, Industrie 4.0, wissenschaftliche Recherche, Compliance.\footnote{Edge et al. (2024). From Local to Global: A Graph RAG Approach to Query-Focused Summarization. \url{https://arxiv.org/abs/2404.16130}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Ontologien als Rückgrat von GraphRAG}
+  \begin{itemize}
+    \item \textbf{Erinnerung:} Ontologien -- primär menschlich kuratiert -- bieten ein formales, domänenspezifisches Vokabular (OWL/RDF).
+    \item \textbf{Drei Rollen in GraphRAG:}
+      \begin{itemize}
+        \item \textbf{Vokabular:} Einheitliche Terminologie verhindert Duplikate und Mehrdeutigkeiten.
+        \item \textbf{Inferenz:} Axiome leiten implizite Fakten automatisch ab.\\
+          Bsp.: \texttt{Metformin behandelt DiabetesTyp2} + \texttt{DiabetesTyp2 ist-ein Stoffwechselerkrankung}\\
+          $\Rightarrow$ automatisch: \texttt{Metformin behandelt (indirekt) Stoffwechselerkrankung}
+        \item \textbf{Interoperabilität:} Verschiedene Datenquellen werden auf eine gemeinsame Ontologie normiert und damit kombinierbar.
+      \end{itemize}
+    \item \textbf{Abfrage mit SPARQL:}\\
+      \texttt{SELECT ?therapie WHERE \{ :DiabetesTyp2 :behandeltMit ?therapie \}}
   \end{itemize}
 \end{frame}
 
@@ -2116,6 +2330,16 @@
   \end{table}
 \end{frame}
 
+\begin{frame}{Aktuelle GraphRAG-Varianten und Forschungsstand}
+  \begin{itemize}
+    \item \textbf{Microsoft GraphRAG}\footnote{Edge et al. (2024). From Local to Global: A Graph RAG Approach to Query-Focused Summarization. \url{https://arxiv.org/abs/2404.16130}} (2024): Hierarchische Community-Strukturen im Wissensgraphen; getrennte globale und lokale Abfragestrategien.
+    \item \textbf{HybridRAG}\footnote{Sarmah et al. (2024). HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation. \url{https://doi.org/10.1145/3677052.3698671}} (2024, BlackRock/NVIDIA): Kombination von Vektor-Retrieval und KG-Abfragen -- erzielt bessere Präzision als beide Einzelansätze.
+    \item \textbf{LightRAG}\footnote{Guo et al. (2025). LightRAG: Simple and Fast Retrieval-Augmented Generation. \url{https://doi.org/10.18653/v1/2025.findings-emnlp.568}} (2025, EMNLP): Vereinfachtes GraphRAG mit schnellerer Graph-Konstruktion, dual-level Retrieval.
+    \item \textbf{KG-guided RAG}\footnote{Zhu et al. (2025). Knowledge Graph-Guided Retrieval Augmented Generation. \url{https://doi.org/10.18653/v1/2025.naacl-long.449}} (2025, NAACL): Ontologiegesteuerte Abfragepläne verbessern Multi-hop-Reasoning.
+    \item \textbf{Übersicht:} Peng et al. (2025). \textit{Graph Retrieval-Augmented Generation: A Survey}\footnote{\url{https://doi.org/10.1145/3777378}} -- systematische Kategorisierung von über 100 GraphRAG-Ansätzen.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Herausforderungen und Ausblick für GraphRAG mit Ontologien}
   \begin{itemize}
     \item \textbf{Herausforderungen:}
@@ -2136,6 +2360,34 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Von Retrieval zu autonomem Handeln}
+  \begin{columns}
+    \begin{column}{0.48\textwidth}
+      \textbf{RAG / GraphRAG (bisher):}
+      \begin{itemize}
+        \item \emph{Passives} Informationsabrufsystem
+        \item Beantwortet Fragen durch Suchen und Generieren
+        \item Handelt nicht selbst; ändert keine Zustände in der Welt
+        \item Wird als \textbf{Tool} von einem Agenten aufgerufen
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{LLM-Agenten (jetzt):}
+      \begin{itemize}
+        \item \emph{Aktiv} planend und handelnd
+        \item Nutzen RAG und GraphRAG als \textbf{eines von vielen Tools}
+        \item Können APIs aufrufen, Code ausführen, Dateien schreiben
+        \item Iterieren in Zyklen; beobachten und reagieren auf ihre Umgebung
+        \item Koordinieren sich in Multi-Agenten-Systemen
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.4cm}
+  \begin{center}
+    \textit{Der Schlüsselunterschied: Agenten \textbf{verändern} die Welt -- Retrieval-Systeme beschreiben sie nur.}
+  \end{center}
+\end{frame}
+
 % Abschnitt: Komplexe Agentensysteme
 \section{Komplexe Agentensysteme}
 
@@ -2152,23 +2404,55 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Architektur eines komplexen Agentensystems}
-  \begin{itemize}
-    \item \textbf{Hauptkomponenten:}
+\begin{frame}{LLM-Agent: Kernkomponenten und Werkzeugkasten}
+  \begin{columns}
+    \begin{column}{0.38\textwidth}
       \begin{itemize}
-        \item \textbf{Agenten:} Autonome Einheiten mit spezifischen Fähigkeiten.
-        \item \textbf{Tool-Interface:} Ermöglicht den Zugriff auf externe Tools wie APIs, Datenbanken, Ontologien oder Rechenressourcen.
-        \item \textbf{Kommunikationsmodul:} Ermöglicht den Austausch zwischen Agenten.
-        \item \textbf{Planungs- und Entscheidungsmodul:} Koordiniert die Aktionen der Agenten.
+        \item \textbf{LLM-Kern:} Planung, Reasoning, Entscheidung welches Tool nötig ist
+        \item \textbf{Gedächtnis:}
+          \begin{itemize}\footnotesize
+            \item Kurzzeit: Kontextfenster
+            \item Langzeit: Vektorspeicher, Skills
+          \end{itemize}
+        \item \textbf{Werkzeugkasten:} Dynamisch erweiterbar -- RAG ist eines von vielen Tools
+        \item \textbf{Umgebung:} Agenten \emph{beobachten und verändern} aktiv die Welt
       \end{itemize}
-    \item \textbf{Workflow:}
-      \begin{enumerate}
-        \item Eingabe einer Aufgabe durch den Benutzer.
-        \item Agenten analysieren die Aufgabe, nutzen ggf. Ontologien zur Wissensstrukturierung und planen die Lösung.
-        \item Tools und Ontologien werden genutzt, um Teilaufgaben zu lösen.
-        \item Ergebnisse werden aggregiert und präsentiert.
-      \end{enumerate}
-  \end{itemize}
+    \end{column}
+    \begin{column}{0.60\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.72, transform shape,
+        box/.style={draw, rounded corners, minimum width=2.8cm, minimum height=0.65cm, text centered, font=\small, align=center},
+        tool/.style={draw, rounded corners, fill=orange!25, minimum width=2.8cm, minimum height=0.45cm, text centered, font=\scriptsize},
+        arr/.style={->, >=stealth, thick},
+        barr/.style={<->, >=stealth, thick}
+      ]
+        \node[box, fill=yellow!25] (user) at (0, 6.2) {Benutzer};
+        \node[box, fill=blue!20, minimum height=1.4cm] (agent) at (0, 4.3)
+          {\textbf{LLM-Agent}\\Planung \& Reasoning};
+        \node[box, fill=purple!15] (mem) at (0, 2.6) {Gedächtnis};
+        \node[box, fill=green!15, minimum width=7cm] (env) at (5.0, 0.0)
+          {Umgebung (DBs, APIs, Web, FS)};
+        % Toolbox background
+        \draw[dashed, draw=orange!70, thick, fill=orange!5, rounded corners=5pt]
+          (3, 1.5) rectangle (6.9, 6.8);
+        \node[font=\small\bfseries, text=orange!70!black] at (5, 7.1) {Werkzeugkasten};
+        \node[tool] at (5, 6.3) {Web-Suche};
+        \node[tool] at (5, 5.5) {Code-Ausführung};
+        \node[tool] at (5, 4.7) {GraphRAG / KG};
+        \node[tool] at (5, 3.9) {Vektor-RAG};
+        \node[tool] at (5, 3.1) {Datenbank / API};
+        \node[tool] at (5, 2.3) {Dateisystem};
+        % Arrows
+        \draw[arr] (user.south) -- node[right,font=\tiny]{Aufgabe} (agent.north);
+        \draw[arr, bend left=45] (agent.north west) to
+          node[left,font=\tiny]{Antwort} (user.south west);
+        \draw[barr] (agent.east) -- node[above,font=\tiny]{Aufruf/Ergebnis} (3, 4.3);
+        \draw[barr] (agent.south) -- node[right,font=\tiny]{R/W} (mem.north);
+        \draw[barr] (mem.south) |- (env.west);
+        \draw[barr] (5, 1.5) -- (env.north);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Beispiel: Multi-Agentensystem für medizinische Diagnose}
@@ -2208,6 +2492,113 @@
       \end{itemize}
     \item \textbf{Vorteile:} Effizienzsteigerung, strukturierte Ergebnisse, semantische Suche.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Der Agentic Loop: Planung, Handeln, Beobachten, Reflektieren}
+  \begin{columns}
+    \begin{column}{0.42\textwidth}
+      \begin{itemize}
+        \item Agenten arbeiten in \textbf{iterativen Zyklen} bis das Ziel erreicht ist
+        \item \textbf{Planungsstrategien:} Chain-of-Thought, Tree of Thoughts\footnote{Yao et al. (2023). Tree of Thoughts: Deliberate Problem Solving with LLMs. \url{https://arxiv.org/abs/2305.10601}}, Task Decomposition
+        \item \textbf{Abbruch:} bei Zielerreichung, erkanntem Fehler oder erreichtem Iterations-Limit
+        \item \textbf{Typische Herausforderungen:}
+          \begin{itemize}\small
+            \item Kontextfensterlimit bei langen Loops
+            \item Fehlerfortpflanzung in mehrstufigen Pipelines
+            \item Endlosschleifen (Loop-Erkennung) und unkontrollierte Tool-Aufrufe
+          \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.82, transform shape,
+        state/.style={draw, rounded corners, minimum width=3cm, minimum height=0.8cm, text centered, font=\small},
+        arr/.style={->, >=stealth, thick}
+      ]
+        \node[state, fill=yellow!40] (plan) at (0, 0) {1.~Planung (CoT)};
+        \node[state, fill=orange!40] (act)  at (4.5, 0) {2.~Tool-Aufruf};
+        \node[state, fill=green!30]  (obs)  at (4.5,-2.5) {3.~Beobachtung};
+        \node[state, fill=red!20]    (refl) at (0,-2.5) {4.~Reflexion};
+        \node[state, fill=gray!30, minimum width=2.5cm] (ans) at (2.25,-4.2) {Finale Antwort};
+        \draw[arr] (plan.east) -- node[above,font=\scriptsize]{wählen} (act.west);
+        \draw[arr] (act.south)  -- node[right,font=\scriptsize]{ausführen} (obs.north);
+        \draw[arr] (obs.west)   -- node[below,font=\scriptsize]{integrieren} (refl.east);
+        \draw[arr] (refl.north) -- node[left,font=\scriptsize]{neu planen} (plan.south);
+        \draw[arr, dashed] (refl.south) to[bend right=15]
+          node[right,font=\scriptsize]{Ziel erreicht} (ans.north);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{ReAct: Reasoning und Acting -- Sichtbares Denken}
+  \begin{itemize}
+    \item \textbf{ReAct}\footnote{Yao et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. \url{https://arxiv.org/abs/2210.03629}}: Das Modell wechselt explizit zwischen \emph{Gedankenschritten} und \emph{Tool-Aktionen}.
+    \item \textbf{Vorteil:} Beobachtungen (Tool-Ergebnisse) werden sofort in den nächsten Denkschritt integriert -- Fehler sind früh korrigierbar.
+    \item \textbf{Verwandte Ansätze:} Self-Ask, Chain-of-Thought + Tools, Reflexion\footnote{Shinn et al. (2023). Reflexion: Language Agents with Verbal Reinforcement Learning. \url{https://arxiv.org/abs/2303.11366}}.
+  \end{itemize}
+  \vspace{0.1cm}
+  \centering
+  \resizebox{0.98\textwidth}{!}{
+  \begin{tikzpicture}[
+    thought/.style={draw, rounded corners, fill=blue!20, minimum width=2.2cm, minimum height=0.7cm, text centered, font=\small},
+    action/.style={draw, rounded corners, fill=orange!30, minimum width=2.2cm, minimum height=0.7cm, text centered, font=\small},
+    obs/.style={draw, rounded corners, fill=green!25, minimum width=2.2cm, minimum height=0.7cm, text centered, font=\small},
+    ans/.style={draw, rounded corners, fill=gray!25, minimum width=2.5cm, minimum height=0.7cm, text centered, font=\small},
+    arr/.style={->, >=stealth, thick}
+  ]
+    \node[thought] (t1) at (0, 0)  {Gedanke~1};
+    \node[action]  (a1) at (3, 0)  {Aktion~1};
+    \node[obs]     (o1) at (6, 0)  {Beob.~1};
+    \node[thought] (t2) at (9, 0)  {Gedanke~2};
+    \node[action]  (a2) at (12, 0) {Aktion~2};
+    \node[obs]     (o2) at (15, 0) {Beob.~2};
+    \node[ans]     (an) at (18, 0) {Antwort};
+    \foreach \f/\t in {t1/a1, a1/o1, o1/t2, t2/a2, a2/o2, o2/an}
+      \draw[arr] (\f) -- (\t);
+    \node[font=\scriptsize, text=orange!70!black, below=0.15cm of a1] {Tool aufrufen};
+    \node[font=\scriptsize, text=green!50!black,  below=0.15cm of o1] {Ergebnis};
+    \node[font=\scriptsize, text=orange!70!black, below=0.15cm of a2] {Tool aufrufen};
+    \node[font=\scriptsize, text=green!50!black,  below=0.15cm of o2] {Ergebnis};
+  \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}{Multi-Agenten-Architektur: Orchestrierung und Umgebungsinteraktion}
+  \centering
+  \begin{tikzpicture}[scale=0.76, transform shape,
+    every node/.style={font=\small},
+    orch/.style={draw, rounded corners, fill=blue!30, minimum width=3.5cm, minimum height=0.8cm, text centered},
+    sub/.style={draw, rounded corners, fill=teal!25, minimum width=2.8cm, minimum height=0.7cm, text centered},
+    tool/.style={draw, rounded corners, fill=orange!25, minimum width=2.5cm, minimum height=0.45cm, text centered, font=\scriptsize},
+    envn/.style={draw, fill=green!15, minimum width=11.5cm, minimum height=0.7cm, text centered},
+    unode/.style={draw, rounded corners, fill=yellow!25, minimum width=2cm, minimum height=0.6cm, text centered},
+    arr/.style={->, >=stealth, thick},
+    barr/.style={<->, >=stealth, thick}
+  ]
+    \node[unode] (user) at (5.75, 7.5)  {Benutzer};
+    \node[orch]  (orch) at (5.75, 6.0)  {Orchestrator-Agent};
+    \node[sub]   (a1)   at (1.5,  4.3)  {Retrieval-Agent};
+    \node[sub]   (a2)   at (5.75, 4.3)  {Analyse-Agent};
+    \node[sub]   (a3)   at (10.0, 4.3)  {Code-Agent};
+    \node[tool]  (t1)   at (1.5,  2.8)  {GraphRAG / RAG};
+    \node[tool]  (t2)   at (5.75, 2.8)  {LLM-Analyse};
+    \node[tool]  (t3)   at (10.0, 2.8)  {Code-Ausführung};
+    \node[envn]  (env)  at (5.75, 1.3)
+      {Umgebung: Datenbanken, Web-APIs, Dateisystem, Sensoren};
+    \draw[arr] (user.south) -- (orch.north);
+    \draw[arr, bend right=20] (orch.north east) to (user.east);
+    \draw[arr] (orch.south west) -- (a1.north);
+    \draw[arr] (orch.south)      -- (a2.north);
+    \draw[arr] (orch.south east) -- (a3.north);
+    \draw[barr] (a1.east) -- node[above,font=\tiny]{Komm.} (a2.west);
+    \draw[arr] (a1.south) -- (t1.north);
+    \draw[arr] (a2.south) -- (t2.north);
+    \draw[arr] (a3.south) -- (t3.north);
+    \draw[barr] (t1.south) -- (env.north west);
+    \draw[barr] (t2.south) -- (env.north);
+    \draw[barr] (t3.south) -- (env.north east);
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Herausforderungen bei komplexen Agentensystemen}
@@ -2279,6 +2670,63 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Wie erkennt ein Agent, dass ein Tool Call nötig ist? (Teil 1)}
+  \begin{itemize}
+    \item \textbf{Frage:} Das Modell ist ein Sprachmodell -- wie entscheidet es \emph{intern}, ob es Freitext generiert oder ein Tool aufruft?
+    \item \textbf{Trainingszeit: SFT mit Tool-Demonstrations-Daten}
+      \begin{itemize}
+        \item Das Modell wird auf Tausenden Beispielen trainiert, in denen korrekte Tool-Aufrufe demonstriert werden.
+        \item Es lernt assoziative Muster: \emph{``Rechenaufgabe $\rightarrow$ calculator; aktuelles Ereignis $\rightarrow$ web\_search; Datei schreiben $\rightarrow$ write\_file''}.
+        \item RLHF bestraft unnötige Tool-Calls (Overhead) und fehlende nötige Calls (falsche Antwort).
+      \end{itemize}
+    \vspace{0.2cm}
+    \item \textbf{Inferenzzeit: Tool-Schemata im System-Prompt}
+      \begin{itemize}
+        \item Alle verfügbaren Tool-Definitionen (JSON-Schema) werden dem Modell im System-Prompt übergeben.
+        \item Das Modell führt de facto \textbf{Semantic Matching} durch: passt die aktuelle Nutzerfrage zu einer der Tool-Beschreibungen?
+        \item Effektiv: In-context Few-Shot-Lernen durch die Beschreibungstexte -- kein separater Klassifikator.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Wie erkennt ein Agent, dass ein Tool Call nötig ist? (Teil 2)}
+  \begin{itemize}
+    \item \textbf{Mechanismus: Strukturierter Token-Output}
+      \begin{itemize}
+        \item Modelle wie GPT-4, Claude 3.5, Gemini sind trainiert, bei Tool-Bedarf \emph{spezielle Token-Sequenzen} zu erzeugen -- ein JSON-Objekt anstelle von Freitext.
+        \item Die Laufzeitumgebung parst die Ausgabe: JSON mit \texttt{"name"}/\texttt{"arguments"}? $\Rightarrow$ Tool-Call; sonst $\Rightarrow$ Antworttext.
+        \item Kein explizites \texttt{if/else} -- die Entscheidung entsteht rein durch die Wahrscheinlichkeitsverteilung des nächsten Tokens.
+      \end{itemize}
+    \vspace{0.2cm}
+    \item \textbf{Implizit gelernte Heuristiken:}
+      \begin{itemize}
+        \item \textbf{Wissens-Cutoff:} ``Was passiert gerade in X?'' $\Rightarrow$ Suche nötig.
+        \item \textbf{Exakte Berechnung:} Arithmetik, die LLMs unzuverlässig lösen $\Rightarrow$ Calculator-Tool.
+        \item \textbf{Datei-/Systemzugriff:} Schreiben, Lesen, Ausführen $\Rightarrow$ Filesystem-/Shell-Tool.
+        \item \textbf{Parameterextraktion:} Argumente direkt aus dem Nutzertext befüllen:\\
+          ``Übersetze `Guten Morgen' ins Englische'' $\Rightarrow$ \texttt{\{"text":"Guten Morgen","target":"en"\}}
+      \end{itemize}
+    \item \textbf{Parallel Function Calling:} GPT-4/Gemini können mehrere Tool-Calls gleichzeitig erzeugen -- reduziert Latenz bei parallelen Teilaufgaben.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Tool Calling: Technische Details -- Funktionsdefinitionen (JSON-Schema)}
+  \begin{itemize}
+    \item LLMs nutzen \textbf{JSON-Schema}-Beschreibungen, um Tools zu identifizieren und zu parametrisieren.
+    \item \textbf{Typische Felder einer Tool-Definition:}
+      \begin{itemize}
+        \item \texttt{name}: Eindeutiger Bezeichner des Tools.
+        \item \texttt{description}: Natürlichsprachliche Beschreibung, die das LLM interpretiert.
+        \item \texttt{parameters}: JSON-Schema der Eingabeparameter (Typen, Pflichtfelder, Enum-Werte).
+      \end{itemize}
+    \item \textbf{Entscheidung des Modells:}
+      \begin{itemize}
+        \item Das Modell entscheidet anhand der Beschreibung, \emph{wann} und \emph{mit welchen Argumenten} ein Tool aufgerufen wird.
+        \item Ausgabe: strukturierter Tool-Call (JSON-Objekt) statt Freitext.
+      \end{itemize}
+    \item \textbf{Formate:} OpenAI Function Calling, Anthropic Tool Use, Google Gemini Tools, MCP (Model Context Protocol).
+  \end{itemize}
+\end{frame}
 
 \begin{frame}{Zukunftsperspektiven für Agentensysteme}
   \begin{itemize}
@@ -2288,6 +2736,98 @@
     \item \textbf{Domänenspezifische Systeme:} Anpassung an spezifische Branchen wie Medizin, Recht, Industrie.
     \item \textbf{Automatisierte Ontologie-Generierung:} LLMs unterstützen beim Aufbau und der Pflege von Ontologien.
   \end{itemize}
+\end{frame}
+
+% Abschnitt: Selbstlernende Agenten, Skills und Multi-Agenten
+\section{Selbstlernende Agenten: Gedächtnis, Skills und Multi-Agenten-Architekturen}
+
+\begin{frame}{Gedächtnistypen in Agentensystemen}
+  \begin{itemize}
+    \item Agenten nutzen verschiedene Gedächtnisformen, analog zur kognitiven Psychologie:
+      \begin{itemize}
+        \item \textbf{In-Context-Gedächtnis:} Informationen im aktuellen Prompt-/Kontextfenster.
+        \item \textbf{Episodisches Gedächtnis:} Vergangene Konversationen und Sitzungen, per Vektorsuche abrufbar.
+        \item \textbf{Semantisches Gedächtnis:} Faktenwissen, Nutzerprofile (\texttt{MEMORY.md}, Nutzermodellierung).
+        \item \textbf{Prozedurales Gedächtnis:} Abfolgen von Handlungen -- \textbf{Skills}.
+      \end{itemize}
+    \vspace{0.3cm}
+    \item \textbf{Skills} sind wiederverwendbare, strukturierte Anleitungen, die der Agent eigenständig abruft und ausführt.
+    \item \textbf{Zusammenspiel:} Episodisches Gedächtnis erinnert \emph{was} passiert ist; prozedurales Gedächtnis kodiert \emph{wie} Aufgaben gelöst werden.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Skills: Prozedurales Gedächtnis für Agenten}
+  \begin{itemize}
+    \item \textbf{Konzept:} Ein Skill ist eine gespeicherte Schritt-für-Schritt-Anleitung für wiederkehrende Aufgaben -- analog zu einer Arbeitsanweisung.
+    \item \textbf{Typischer Aufbau einer \texttt{SKILL.md}-Datei:}
+      \begin{itemize}
+        \item Titel und Beschreibung des Skills.
+        \item Trigger-Bedingung: Wann soll der Skill angewendet werden?
+        \item Geordnete Ausführungsschritte.
+        \item Benötigte Tools und Ressourcen.
+        \item Erwartetes Ergebnis und Erfolgskriterien.
+      \end{itemize}
+    \item \textbf{Hermes Agent}\footnote{\url{https://github.com/NousResearch/hermes-agent}} als Praxisbeispiel:
+      \begin{itemize}
+        \item Erstellt nach komplexen Aufgaben automatisch neue Skills.
+        \item Verbessert bestehende Skills durch Wiederholung und Feedback.
+        \item Gemeinschaftlicher Skill-Austausch über \url{https://agentskills.io/}.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Selbstlernender Agenten-Loop (Closed Learning Loop)}
+  \begin{itemize}
+    \item \textbf{Ablauf:}
+      \begin{enumerate}
+        \item Agent löst eine komplexe Aufgabe erfolgreich.
+        \item Agent erkennt, dass die Aufgabe wiederkehrend und kodifizierbar ist.
+        \item Agent erstellt oder aktualisiert einen Skill (\texttt{SKILL.md}).
+        \item Bei zukünftigen ähnlichen Aufgaben wird der Skill automatisch aktiviert.
+        \item Schlechte Ergebnisse führen zu Skill-Refinement (Selbstverbesserung).
+      \end{enumerate}
+    \vspace{0.3cm}
+    \item \textbf{Vorteile:}
+      \begin{itemize}
+        \item Keine manuelle Programmierung von Verhaltensweisen nötig.
+        \item Kontinuierliche Verbesserung durch Erfahrung (lifelong learning).
+        \item Anpassung an spezifischen Nutzer, Kontext und Domäne.
+      \end{itemize}
+    \item \textbf{Herausforderungen:} Qualitätskontrolle, Vermeidung von Skill Drift, Datenschutz, Approval-Gates.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Multi-Agenten-Architekturen}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \textbf{Orchestrator-Subagent:}
+      \begin{itemize}
+        \item Übergeordneter Orchestrator zerlegt Aufgaben und delegiert an Spezialagenten.
+        \item Subagenten berichten zurück; Orchestrator aggregiert Ergebnisse.
+      \end{itemize}
+      \vspace{0.3cm}
+      \textbf{Supervisor-Worker:}
+      \begin{itemize}
+        \item Supervisor überwacht Fortschritt und korrigiert Agenten bei Bedarf.
+        \item Robuster gegenüber Fehlern einzelner Agenten.
+      \end{itemize}
+      \vspace{0.3cm}
+      \textbf{Peer-to-Peer:}
+      \begin{itemize}
+        \item Direkte Kommunikation ohne zentrale Steuerung.
+        \item Dezentral, resilient, skalierbar.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Frameworks:}
+      \begin{itemize}
+        \item \textbf{AutoGen} (Microsoft)\\Multi-Agenten-Konversationen.\footnote{\url{https://github.com/microsoft/autogen}}
+        \item \textbf{CrewAI}\\Rollenbasierte Agenten-Teams.\footnote{\url{https://github.com/crewAIInc/crewAI}}
+        \item \textbf{LangGraph}\\Graphbasierte Agenten-Pipelines mit Zustandsverwaltung.\footnote{\url{https://github.com/langchain-ai/langgraph}}
+        \item \textbf{Hermes Agent}\\Selbstlernender Open-Source-Agent mit Skills-System.
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 % Abschnitt 9: Zukunftsvisionen und Implikationen
